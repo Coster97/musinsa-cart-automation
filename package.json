@@ -1,0 +1,29 @@
+{
+  "name": "musinsa-cart-automation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Coster97/musinsa-cart-automation.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Coster97/musinsa-cart-automation/issues"
+  },
+  "homepage": "https://github.com/Coster97/musinsa-cart-automation#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.1.2"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
+  }
+}
