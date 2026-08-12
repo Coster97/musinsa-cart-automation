@@ -4,6 +4,8 @@ import { CartPage } from "./pages/CartPage";
 import { OptionPopup } from "./pages/OptionPopup";
 import { CouponPopup } from "./pages/CouponPopup";
 import { OrderPage } from "./pages/OrderPage";
+import { ProductPage } from "./pages/ProductPage";
+import { setProductA, setProductB } from "./helpers/cart-setting";
 
 test("무신사 장바구니 핵심 플로우", async ({ page }) => {
   const homePage = new HomePage(page);
@@ -11,6 +13,7 @@ test("무신사 장바구니 핵심 플로우", async ({ page }) => {
   const optionPopup = new OptionPopup(page);
   const couponPopup = new CouponPopup(page);
   const orderPage = new OrderPage(page);
+  const productPage = new ProductPage(page);
 
   let itemOption = "";
   let itemPrice = "";
@@ -20,29 +23,45 @@ test("무신사 장바구니 핵심 플로우", async ({ page }) => {
   let couponDiscountPrice = "";
 
   await test.step("장바구니 진입 동작 검증", async () => {
-    //무신사 홈페이지 진입
-    await homePage.goto();
-    //CART-001: 장바구니 버튼 노출 확인
-    await expect(homePage.cartBtn).toBeVisible();
     //CART-002: 장바구니 진입
-    await homePage.clickCartBtn();
+    await cartPage.goto();
     await expect(homePage.page).toHaveURL(/\/order\/cart\/?$/);
     console.log("1. 장바구니 버튼 확인 및 장바구니 진입에 성공하였습니다. ✅");
   });
 
-  await test.step("빈 장바구니에서 로그인 페이지로 이동 동작 검증", async () => {
+  await test.step("미로그인 > 빈 장바구니 페이지 노출 상태 검증", async () => {
     //CART-012: 빈 장바구니 확인
     await expect(
       cartPage.page.getByText("장바구니에 담은 상품이 없습니다."),
     ).toBeVisible();
     //CART-013: 로그인하러 가기 버튼 노출 확인
     await expect(cartPage.goToLoginPageBtn).toBeVisible();
-    //CART-014: 로그인 페이지 진입
-    await cartPage.clickLoginBtn();
+    //CART-015: 빈 장바구니인 경우 카테고리 탭 미노출 확인
+    await expect(cartPage.categoryTab).toBeHidden();
+    //CART-125: 빈 장바구니인 경우 구매금액 영역 미노출 확인
+    await expect(cartPage.purchaseAmountSection).toBeHidden();
+    console.log(
+      "2. 미로그인 > 빈 장바구니 노출 상태가 정상적으로 확인되었습니다. ✅",
+    );
+  });
+
+  await test.step("테스트를 위한 장바구니 내 상품 세팅", async () => {
+    await setProductA(cartPage, productPage);
+    await setProductB(cartPage, productPage);
+    console.log("3. 테스트를 위한 상품 세팅을 성공하였습니다. ✅");
+  });
+
+  await test.step("미로그인 > 구매하기 시도 시 동작 검증", async () => {
+    //CART-179: 미로그인 상태에서 구매하기 클릭
+    await cartPage.clickPurchaseBtn();
+    await expect(cartPage.loginAlert).toBeVisible();
+
+    //CART-181: 로그인 얼럿 확인 선택
+    await cartPage.loginConfirm.click();
     //CART-014: 로그인 페이지 진입 완료
     await expect(homePage.page).toHaveURL(/\/login/);
     console.log(
-      "2. 빈 장바구니 확인 및 로그인 페이지 진입에 성공하였습니다. ✅",
+      "4. 미로그인 > 구매 시도 시 로그인 안내 팝업 노출 및 로그인 페이지 이동을 확인하였습니다. ✅",
     );
   });
 
@@ -51,7 +70,7 @@ test("무신사 장바구니 핵심 플로우", async ({ page }) => {
     //CART-003: 로그인 완료 후 리다이렉트로 장바구니 복귀
     await expect(homePage.page).toHaveURL(/\/order\/cart\/?$/);
     await expect(homePage.logoutBtn).toBeVisible();
-    console.log("3. 로그인 완료 후, 장바구니로 리다이렉트 성공하였습니다. ✅");
+    console.log("5. 로그인 완료 후, 장바구니로 리다이렉트 성공하였습니다. ✅");
   });
 
   await test.step("카테고리 탭 노출 검증", async () => {
@@ -75,7 +94,7 @@ test("무신사 장바구니 핵심 플로우", async ({ page }) => {
       ).toBeVisible();
     }
     console.log(
-      `4. 고정 카테고리탭 노출을 확인하였습니다. ✅
+      `6. 고정 카테고리탭 노출을 확인하였습니다. ✅
     전체 ${count.total} / USED ${count.used}`,
     );
   });
@@ -90,7 +109,7 @@ test("무신사 장바구니 핵심 플로우", async ({ page }) => {
     //CART-043: 좋아요 클릭 후, 좋아요 활성화 상태 확인
     await expect.poll(() => cartPage.checkLikeStatus()).toBe(!before);
     console.log(
-      `5. 첫번째 상품의 좋아요 상태를 ${before}에서 ${await cartPage.checkLikeStatus()}로 변경 성공하였습니다. ✅`,
+      `7. 첫번째 상품의 좋아요 상태를 ${before}에서 ${await cartPage.checkLikeStatus()}로 변경 성공하였습니다. ✅`,
     );
   });
 
@@ -115,7 +134,7 @@ test("무신사 장바구니 핵심 플로우", async ({ page }) => {
         )
         .toBe(true);
     }
-    console.log("6. 전체 선택 체크박스 활성화/비활성화에 성공했습니다. ✅");
+    console.log("8. 전체 선택 체크박스 활성화/비활성화에 성공했습니다. ✅");
   });
 
   await test.step("선택한 상품 없는 상태에서 구매 불가 검증", async () => {
@@ -137,7 +156,7 @@ test("무신사 장바구니 핵심 플로우", async ({ page }) => {
     //CART-178: 상품 선택 안내 얼럿 확인 누를 시, 얼럿 닫힘 확인
     await cartPage.noItemSelectedConfirmBtn.click();
     await expect(cartPage.pageAlert).toBeHidden();
-    console.log("7. 상품 미선택 상태에서 구매 불가 동작을 확인하였습니다. ✅");
+    console.log("9. 상품 미선택 상태에서 구매 불가 동작을 확인하였습니다. ✅");
   });
 
   await test.step("브랜드 그룹 체크박스 기능 검증", async () => {
@@ -159,7 +178,7 @@ test("무신사 장바구니 핵심 플로우", async ({ page }) => {
         ),
       )
       .toBe(true);
-    console.log("8. 첫번째 브랜드 그룹 체크박스 활성화에 성공하였습니다. ✅");
+    console.log("10. 첫번째 브랜드 그룹 체크박스 활성화에 성공하였습니다. ✅");
   });
 
   await test.step("선택 삭제 버튼 기능 검증", async () => {
@@ -179,7 +198,7 @@ test("무신사 장바구니 핵심 플로우", async ({ page }) => {
         cartPage.brandName.filter({ hasText: brandName }),
       ).toHaveCount(0);
     }
-    console.log("9. 선택된 상품 선택 삭제를 성공하였습니다. ✅");
+    console.log("11. 선택된 상품 선택 삭제를 성공하였습니다. ✅");
   });
 
   await test.step("상품 필수 정보 노출 검증", async () => {
@@ -199,7 +218,7 @@ test("무신사 장바구니 핵심 플로우", async ({ page }) => {
       itemDiscountPrice = await cartPage.itemDiscountPrice.innerText();
     }
     console.log(
-      `10. 상품 필수 정보 노출을 확인하였습니다. ✅
+      `12. 상품 필수 정보 노출을 확인하였습니다. ✅
     상품 옵션: ${itemOption} / 상품 가격: ${itemPrice} / 상품 할인 가격: ${itemDiscountPrice}`,
     );
   });
@@ -224,7 +243,7 @@ test("무신사 장바구니 핵심 플로우", async ({ page }) => {
     await optionPopup.clickOption();
     await expect(optionPopup.optionDropdownHeader).toHaveText(optionInfo);
     console.log(
-      `11. 상품 옵션 변경 팝업에서 옵션 변경에 성공하였습니다. ✅
+      `13. 상품 옵션 변경 팝업에서 옵션 변경에 성공하였습니다. ✅
     기존 옵션: ${itemOption} / 변경 옵션: ${optionInfo}`,
     );
   });
@@ -255,7 +274,7 @@ test("무신사 장바구니 핵심 플로우", async ({ page }) => {
       optionQuantity,
     );
     const changedPrice = await optionPopup.productTotalPrice.innerText();
-    console.log(`12. 상품 수량 변경 및 상품 금액 변경에 성공하였습니다. ✅
+    console.log(`14. 상품 수량 변경 및 상품 금액 변경에 성공하였습니다. ✅
     기존 수량: ${previousQuantity} / 기존 금액: ${previousPrice}
     변경 수량: ${optionQuantity} / 변경 금액: ${changedPrice}`);
   });
@@ -274,7 +293,7 @@ test("무신사 장바구니 핵심 플로우", async ({ page }) => {
     //CART-099: 변경한 옵션 및 수량이 장바구니 상품에 정상 반영 확인
     expect(itemOption).toContain(`${optionInfo}`);
     expect(itemOption).toContain(`${optionQuantity}개`);
-    console.log(`13. 상품 옵션 변경 적용에 성공하였습니다. ✅
+    console.log(`15. 상품 옵션 변경 적용에 성공하였습니다. ✅
     변경 옵션: ${itemOption}`);
   });
 
@@ -296,7 +315,7 @@ test("무신사 장바구니 핵심 플로우", async ({ page }) => {
       await couponPopup.couponPrice.innerHTML(),
     );
 
-    console.log(`14. 쿠폰 리스트 및 쿠폰 필수 정보 확인을 성공하였습니다. ✅`);
+    console.log(`16. 쿠폰 리스트 및 쿠폰 필수 정보 확인을 성공하였습니다. ✅`);
   });
 
   await test.step("상품 쿠폰 사용 > 쿠폰 선택 동작 검증", async () => {
@@ -304,7 +323,7 @@ test("무신사 장바구니 핵심 플로우", async ({ page }) => {
     await couponPopup.clickCoupon();
     await expect(couponPopup.couponCancelBtn).toBeVisible();
     console.log(
-      `15. 쿠폰 선택 시 쿠폰 사용 '취소' 버튼 노출을 확인하였습니다. ✅`,
+      `17. 쿠폰 선택 시 쿠폰 사용 '취소' 버튼 노출을 확인하였습니다. ✅`,
     );
   });
 
@@ -320,7 +339,7 @@ test("무신사 장바구니 핵심 플로우", async ({ page }) => {
       await cartPage.itemDiscountPrice.innerText(),
     );
     itemDiscountPrice = await cartPage.itemDiscountPrice.innerText();
-    console.log(`16. 쿠폰 정상 적용에 성공하였습니다. ✅
+    console.log(`18. 쿠폰 정상 적용에 성공하였습니다. ✅
     기존 상품 금액: ${itemPrice} / 쿠폰 할인: ${couponDiscountPrice}원 / 쿠폰 할인가 ${itemDiscountPrice}`);
   });
 
@@ -335,12 +354,12 @@ test("무신사 장바구니 핵심 플로우", async ({ page }) => {
     await expect(cartPage.expectBenefitPrice).toBeVisible();
     //CART-127, CART-129, CART-132, CART-134: 각 필수 항목 금액 반영 확인
     await cartPage.verifyPurchaseAmount(itemPrice, itemDiscountPrice);
-    console.log("17. 구매 금액 영역 및 필수 항목 검증에 성공하였습니다. ✅");
+    console.log("19. 구매 금액 영역 및 필수 항목 검증에 성공하였습니다. ✅");
   });
   await test.step("구매하기 버튼 클릭 > 주문서 페이지 이동 동작 검증", async () => {
     //CART-183: 구매하기 버튼 클릭 시 주문서 페이지 이동 확인
     await cartPage.clickPurchaseBtn();
     await expect(orderPage.page).toHaveURL(/\/order\/order-form\/?$/);
-    console.log("18. 주문서 페이지로 이동 성공하였습니다. ✅");
+    console.log("20. 주문서 페이지로 이동 성공하였습니다. ✅");
   });
 });

@@ -4,6 +4,8 @@ export class CartPage {
   readonly page: Page;
   readonly goToLoginPageBtn: Locator; //로그인하러 가기 버튼
   readonly pageAlert: Locator; //페이지 공통 얼럿, 팝업
+  readonly loginAlert: Locator; //로그인 얼럿
+  readonly loginConfirm: Locator; //로그인 얼럿 확인 버튼
 
   readonly promotionPopup: Locator; //프로모션 팝업
   readonly promotionCloseBtn: Locator; //프로모션 팝업 닫기 버튼
@@ -46,12 +48,20 @@ export class CartPage {
 
   readonly purchaseBtn: Locator; //구매하기 버튼
 
+  readonly recommendItems: Locator;
+  readonly firstRecommendItem: Locator;
+  readonly secondRecommendItem: Locator;
+
   constructor(page: Page) {
     this.page = page;
     this.goToLoginPageBtn = page.getByRole("button", {
       name: "로그인하러 가기",
     });
     this.pageAlert = page.getByRole("dialog");
+    this.loginAlert = page.getByRole("dialog", {
+      name: "로그인이 필요합니다",
+    });
+    this.loginConfirm = this.loginAlert.getByRole("button", { name: " 확인" });
 
     this.promotionPopup = page
       .locator('iframe[title="Modal Message"]')
@@ -151,8 +161,23 @@ export class CartPage {
     this.purchaseBtn = page
       .locator('div[class*="CTA__PaymentButton"]')
       .locator("button");
+
+    this.recommendItems = page.locator(
+      'div[class*="RecommendGoodsList__GtmItemWrapper"]',
+    );
+
+    this.firstRecommendItem = this.recommendItems
+      .nth(0)
+      .locator('a[aria-label="상품 상세로 이동"]');
+
+    this.secondRecommendItem = this.recommendItems
+      .nth(1)
+      .locator('a[aria-label="상품 상세로 이동"]');
   }
 
+  async goto() {
+    await this.page.goto("https://www.musinsa.com/order/cart");
+  }
   async clickLoginBtn() {
     await this.goToLoginPageBtn.click();
   }
@@ -256,5 +281,19 @@ export class CartPage {
   }
   async clickPurchaseBtn() {
     await this.purchaseBtn.click();
+  }
+
+  async clickFirstRecommendItem() {
+    await this.firstRecommendItem.click();
+  }
+  async clickSecondRecommendItem() {
+    await this.secondRecommendItem.click();
+  }
+
+  async waitForRecommendItems() {
+    await this.recommendItems.first().waitFor({
+      state: "visible",
+    });
+    console.log("추천상품 DOM 개수:", await this.recommendItems.count());
   }
 }
