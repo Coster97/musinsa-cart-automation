@@ -173,8 +173,11 @@ npx playwright show-report
 
 ### Playwright CLI
 
-<img width="800" src="https://github.com/user-attachments/assets/afd81553-7b2c-41b5-9dc6-0ad23ac341f9" />
+<img width="800" src="https://github.com/user-attachments/assets/a1b7bc91-6bfc-4b3a-9d1e-460116930910" />
+
+
 
 ### Playwright HTML Report
 
-<img width="800" src="https://github.com/user-attachments/assets/00ecd465-fe1f-4fa5-b00c-c7de166a90d8" />
+<img width="800" src="https://github.com/user-attachments/assets/89b210fa-1a36-4424-a2ba-b261eabcd501" />
+
